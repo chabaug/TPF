@@ -58,6 +58,12 @@ sacarRepetidos (a:as) 	| elem a as = sacarRepetidos as
 			| otherwise = a:sacarRepetidos as
 
 todosLosTicketsParaLaMismaSalaT :: [Ticket] -> Bool
+todosLosTicketsParaLaMismaSalaT []  	= True
+todosLosTicketsParaLaMismaSalaT [t] 	= True
+todosLosTicketsParaLaMismaSalaT (t:ts) 	| salaT t == salaT (head ts) 	= todosLosTicketsParaLaMismaSalaT ts
+					| otherwise 			= False
+
+{- todosLosTicketsParaLaMismaSalaT :: [Ticket] -> Bool
 todosLosTicketsParaLaMismaSalaT ts	| length (ticketsDeLaMismaSala ts) == length ts	= True
 					| otherwise					= False
 
@@ -66,17 +72,31 @@ ticketsDeLaMismaSala [] 	= []
 ticketsDeLaMismaSala [t]	= [t]
 ticketsDeLaMismaSala (t1:t2:ts)	| salaT t1 == salaT t2	= t1:ticketsDeLaMismaSala (t2:ts)
 				| otherwise		= ticketsDeLaMismaSala (t2:ts)
+-}
 
 cambiarSalaT :: [Ticket] -> Sala -> Sala -> [Ticket]
 cambiarSalaT [] _ _ = []
 cambiarSalaT ((TicketSinUsar s p):ts) v n 
-		| salaT (TicketSinUsar s p) == v = (TicketSinUsar v p):cambiarSalaT ts v n
-		| otherwise			 = (TicketSinUsar s p):cambiarSalaT ts v n
-cambiarSalaT ((TicketUsado (TicketSinUsar s p)):ts) v n 
-		| salaT (TicketUsado (TicketSinUsar s p)) == v  = (TicketUsado (TicketSinUsar n p)):cambiarSalaT ts v n
-		| otherwise			 		= (TicketUsado (TicketSinUsar s p)):cambiarSalaT ts v n
+		| s == v 	= (TicketSinUsar n p):cambiarSalaT ts v n
+		| otherwise	= (TicketSinUsar s p):cambiarSalaT ts v n
+cambiarSalaT ((TicketUsado (TicketSinUsar s p)):ts) v n  
+		| s == v  	= (TicketUsado (TicketSinUsar n p)):cambiarSalaT ts v n
+		| otherwise	= (TicketUsado (TicketSinUsar s p)):cambiarSalaT ts v n
 
+-- Objetos para Pruebas
+p1 = nuevaP "Pelicula1" [Aventura, Comedia] ["Harrison Ford", "Keanu Reeves"] False
+p2 = nuevaP "Pelicula2" [Aventura, Drama] ["Dustin Hoffman", "Keanu Reeves"] True
+p3 = nuevaP "Pelicula3" [Comedia, Terror] ["Alberto Olmedo", "Jorge Porcel"] False
+p4 = nuevaP "Pelicula4" [Aventura, Comedia] ["Harrison Ford", "Keanu Reeves"] False
+p5 = nuevaP "Pelicula5" [Aventura, Drama] ["Dustin Hoffman", "Keanu Reeves"] True
+p6 = nuevaP "Pelicula6" [Comedia, Terror] ["Alberto Olmedo", "Jorge Porcel"] False
 
+t1 = nuevoT 2 p1 True
+t2 = nuevoT 5 p1 True
+t3 = nuevoT 2 p2 True
+t4 = nuevoT 2 p2 True
+t5 = nuevoT 2 p2 True
+t6 = nuevoT 2 p2 True
 
 
 

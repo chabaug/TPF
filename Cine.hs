@@ -41,8 +41,7 @@ espectadoresC (SalaConPelicula c s p i) x
 espectadoresC (TicketVendido c _) x = espectadoresC c x
 
 salaC :: Cine -> Pelicula -> Sala
-salaC (C _) _ = 0
-salaC (SalaSinPelicula c p) x 	= salaC c x
+salaC (SalaSinPelicula c s) x 	= salaC c x
 salaC (SalaConPelicula c s p i) x	| p == x 	= s
 					| otherwise 	= salaC c x
 salaC (TicketVendido c _) x	= salaC c x
@@ -59,17 +58,16 @@ abrirSalaC c s = (SalaSinPelicula c s)
 agregarPeliculaC :: Cine -> Pelicula -> Sala -> Cine
 agregarPeliculaC (SalaSinPelicula c s) p x 
 			| x == s 		= (SalaConPelicula c x p 0)
-			| otherwise		= agregarPeliculaC c p x
-agregarPeliculaC (SalaConPelicula c _ _ _) p x 	= agregarPeliculaC c p x
-agregarPeliculaC (TicketVendido c _) p x	= agregarPeliculaC c p x
+			| otherwise		= (SalaSinPelicula (agregarPeliculaC c p x) s)
+agregarPeliculaC (SalaConPelicula c s j i) p x 	= (SalaConPelicula (agregarPeliculaC c p x) s j i)
+agregarPeliculaC (TicketVendido c t) p x	= (TicketVendido (agregarPeliculaC c p x) t)
 
 cerrarSalaC :: Cine -> Sala -> Cine
-cerrarSalaC (C n) x					= (C n)
 cerrarSalaC (SalaSinPelicula c s) x 	| s == x 	= c
-					| otherwise 	= cerrarSalaC c x
+					| otherwise 	= (SalaSinPelicula (cerrarSalaC c x) s)
 cerrarSalaC (SalaConPelicula c s p i) x | s == x 	= c
-					| otherwise	= cerrarSalaC c x
-cerrarSalaC (TicketVendido c t) x			= cerrarSalaC c x
+					| otherwise	= (SalaConPelicula (cerrarSalaC c x) s p i)
+cerrarSalaC (TicketVendido c t) x			= (TicketVendido (cerrarSalaC c x) t)
 
 cerrarSalasC :: Cine -> Int -> Cine
 cerrarSalasC (C n) x			= (C n)
@@ -91,7 +89,7 @@ peliculaC (TicketVendido c t) x		= peliculaC c x
 
 venderTicketC :: Cine -> Pelicula -> (Cine, Ticket)
 venderTicketC (SalaSinPelicula c s) x = ((SalaSinPelicula (venderTicketAux c x) s), (nuevoT (salaC (SalaSinPelicula c s) x) x False))
-venderTicketC (SalaConPelicula c s p i) x | x == p = ((TicketVendido (SalaConPelicula c s p i) (nuevoT s p False)), (nuevoT s p False)) | otherwise	= ((SalaConPelicula (venderTicketAux c x) s p i), (nuevoT (salaC (SalaConPelicula c s p i) x) x False))
+venderTicketC (SalaConPelicula c s p i) x | x == p 	= ((TicketVendido (SalaConPelicula c s p i) (nuevoT s p False)), (nuevoT s p False)) | otherwise	= ((SalaConPelicula (venderTicketAux c x) s p i), (nuevoT (salaC (SalaConPelicula c s p i) x) x False))
 venderTicketC (TicketVendido c t) x
 		= ((TicketVendido (venderTicketAux c x) t), (nuevoT (salaC (TicketVendido c t) x) x False))
 
@@ -123,26 +121,30 @@ ingresarASalaAux (TicketVendido c t) x y
 
 pasarA3DUnaPeliculaC :: Cine -> Nombre -> (Cine, Pelicula)
 pasarA3DUnaPeliculaC (SalaSinPelicula c s) n
-	= ((SalaSinPelicula (pasarA3DUnaPeliculaAux c n) s), (pasarA3DUnaPeliAux2 c n))
+	= ((SalaSinPelicula (modificaPeliDelCineAux c n) s), (hacer3DUnaPeliAux c n))
 pasarA3DUnaPeliculaC (SalaConPelicula c s p i) n
 	| n == nombreP p
 	= ((SalaConPelicula c s (nuevaP n (generosP p) (actoresP p) True) i), (nuevaP n (generosP p) (actoresP p) True))
 	| otherwise	
-	= ((SalaConPelicula (pasarA3DUnaPeliculaAux c n) s p i), (pasarA3DUnaPeliAux2 c n))
+	= ((SalaConPelicula (modificaPeliDelCineAux c n) s p i), (hacer3DUnaPeliAux c n))
 pasarA3DUnaPeliculaC (TicketVendido c t) n 
-	= ((TicketVendido (pasarA3DUnaPeliculaAux c n) t), (pasarA3DUnaPeliAux2 c n))
+	= ((TicketVendido (modificaPeliDelCineAux c n) t), (hacer3DUnaPeliAux c n))
 
-pasarA3DUnaPeliculaAux :: Cine -> Nombre -> Cine
-pasarA3DUnaPeliculaAux (C n) _ = (C n)
-pasarA3DUnaPeliculaAux (SalaSinPelicula c s) n = (SalaSinPelicula (pasarA3DUnaPeliculaAux c n) s)
-pasarA3DUnaPeliculaAux (SalaConPelicula c s p i) n
+modificaPeliDelCineAux :: Cine -> Nombre -> Cine
+modificaPeliDelCineAux (C n) _ = (C n)
+modificaPeliDelCineAux (SalaSinPelicula c s) n = (SalaSinPelicula (modificaPeliDelCineAux c n) s)
+modificaPeliDelCineAux (SalaConPelicula c s p i) n
 		| n == nombreP p	= (SalaConPelicula c s (nuevaP n (generosP p) (actoresP p) True) i)
-		| otherwise		= (SalaConPelicula (pasarA3DUnaPeliculaAux c n) s p i)
-pasarA3DUnaPeliculaAux (TicketVendido c t) n = (TicketVendido (pasarA3DUnaPeliculaAux c n) t)
+		| otherwise		= (SalaConPelicula (modificaPeliDelCineAux c n) s p i)
+modificaPeliDelCineAux (TicketVendido c t) n = (TicketVendido (modificaPeliDelCineAux c n) t)
 
-pasarA3DUnaPeliAux2 :: Cine -> Nombre -> Pelicula
-pasarA3DUnaPeliAux2 (SalaSinPelicula c s) n 	= pasarA3DUnaPeliAux2 c n
-pasarA3DUnaPeliAux2 (SalaConPelicula c s p i) n 
+hacer3DUnaPeliAux :: Cine -> Nombre -> Pelicula
+hacer3DUnaPeliAux (SalaSinPelicula c s) n 	= hacer3DUnaPeliAux c n
+hacer3DUnaPeliAux (SalaConPelicula c s p i) n 
 			| n == nombreP p	= nuevaP n (generosP p) (actoresP p) True
-			| otherwise		= pasarA3DUnaPeliAux2 c n
-pasarA3DUnaPeliAux2 (TicketVendido c t) n 	= pasarA3DUnaPeliAux2 c n
+			| otherwise		= hacer3DUnaPeliAux c n
+hacer3DUnaPeliAux (TicketVendido c t) n 	= hacer3DUnaPeliAux c n
+
+
+
+
