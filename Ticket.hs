@@ -24,8 +24,9 @@ usadoT (TicketUsado _) 		= True
 usarT :: Ticket -> Ticket
 usarT t = (TicketUsado t)
 
+-- Estaba de mas 'peliculaMenosVistaT [t] = peliculaT t' --
+
 peliculaMenosVistaT :: [Ticket] -> Pelicula
-peliculaMenosVistaT [t] = peliculaT t
 peliculaMenosVistaT (ts) = menosApariciones (sacarRepetidos(damePeliculasT ts)) (dameUsadosT ts)
 
 menosApariciones :: [Pelicula] -> [Ticket] -> Pelicula
@@ -42,10 +43,11 @@ damePeliculasT :: [Ticket] -> [Pelicula]
 damePeliculasT [] = []
 damePeliculasT (t:ts) = peliculaT t:damePeliculasT ts
 
-contarPelis :: [Pelicula] -> Pelicula -> Int
-contarPelis [] _ 	= 0
-contarPelis (p:ps) x	| x == p 	= 1 + contarPelis ps x
-			| otherwise 	= contarPelis ps x
+-- Esta funcion no se usa en ningun lado
+--contarPelis :: [Pelicula] -> Pelicula -> Int
+--contarPelis [] _ 	= 0
+--contarPelis (p:ps) x	| x == p 	= 1 + contarPelis ps x
+--			| otherwise 	= contarPelis ps x
 
 contarPeliEnTicket :: [Ticket] -> Pelicula -> Int
 contarPeliEnTicket [] _ = 0

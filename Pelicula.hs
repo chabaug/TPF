@@ -19,8 +19,9 @@ actoresP (P _ _ a _) = a
 es3DP :: Pelicula -> Bool
 es3DP (P _ _ _ b) = b
 
+-- Estaba de mas el 'agruparPelisPorGeneroP [] = []' --
+
 agruparPelisPorGeneroP :: [Pelicula] -> [(Genero, [Pelicula])]
-agruparPelisPorGeneroP [] = []
 agruparPelisPorGeneroP ps = perteneceLista Aventura (pelisDelGeneroP ps Aventura)++perteneceLista Comedia (pelisDelGeneroP ps Comedia)++perteneceLista Drama (pelisDelGeneroP ps Drama)++perteneceLista Romantica (pelisDelGeneroP ps Romantica)++perteneceLista Terror (pelisDelGeneroP ps Terror)
 
 pelisDelGeneroP :: [Pelicula] -> Genero -> [Pelicula]
@@ -32,19 +33,27 @@ perteneceLista :: Genero -> [Pelicula] -> [(Genero, [Pelicula])]
 perteneceLista g [] 	= []
 perteneceLista g ps = [(g, ps)]
 
+-- Esta funcion no se usa en ningun lado
 
-dameGenerosP :: [Pelicula] -> [Genero]
-dameGenerosP [] 	= []
-dameGenerosP (p:ps)	= sacarRepetidos(generosP p++dameGenerosP ps)
+--dameGenerosP :: [Pelicula] -> [Genero]
+--dameGenerosP [] 	= []
+--dameGenerosP (p:ps)	= sacarRepetidos(generosP p++dameGenerosP ps)
 
-sacarRepetidos :: [Genero] -> [Genero]
-sacarRepetidos [] = []
-sacarRepetidos (a:as) 	| elem a as = sacarRepetidos as
-			| otherwise = a:sacarRepetidos as	
+sacarRepetidosG :: [Genero] -> [Genero]
+sacarRepetidosG [] = []
+sacarRepetidosG (a:as) 	| elem a as = sacarRepetidosG as
+			| otherwise = a:sacarRepetidosG as	
+
+sacarRepetidosA :: [Actor] -> [Actor]
+sacarRepetidosA [] = []
+sacarRepetidosA (a:as) 	| elem a as = sacarRepetidosA as
+			| otherwise = a:sacarRepetidosA as	
+
+-- No sacabamos los repetidos de los generos y actores --
 
 generarSagaDePeliculasP :: [Actor] -> [Genero] -> [Nombre] -> [Pelicula]
 generarSagaDePeliculasP _ _ [] = []
-generarSagaDePeliculasP as gs (n:ns) = nuevaP n gs as False:generarSagaDePeliculasP as gs ns
+generarSagaDePeliculasP as gs (n:ns) = nuevaP n (sacarRepetidosG gs) (sacarRepetidosA as) False:generarSagaDePeliculasP as gs ns
 
 p1 = (P "Star Wars" [Aventura, Comedia] ["Harrison Ford", "Keanu Reeves"] False)
 p2 = (P "Pepito" [Aventura, Drama] ["Dustin Hoffman", "Keanu Reeves"] True)
